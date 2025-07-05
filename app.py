@@ -3,12 +3,29 @@ from flask_cors import CORS
 from gtts import gTTS
 import whisper
 import os
+import requests
+
+def download_whisper_model():
+    model_path = os.path.expanduser("~/.cache/whisper/medium.pt")
+    if not os.path.exists(model_path):
+        print("📦 Downloading Whisper model from Google Drive...")
+        url = "https://drive.google.com/uc?export=download&id=1jU0mGq0-x5tTdz73wRBk5l9gPhOG7oA8"
+        response = requests.get(url)
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        with open(model_path, 'wb') as f:
+            f.write(response.content)
+        print("✅ Whisper model downloaded successfully!")
+    else:
+        print("🟢 Whisper model already exists!")
+
+download_whisper_model()
+
 
 app = Flask(__name__)
 CORS(app)
 
 # Load Whisper model once at startup
-model = whisper.load_model("tiny")
+model = whisper.load_model("medium")
 
 @app.route('/')
 def home():
