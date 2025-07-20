@@ -37,6 +37,8 @@ def home():
 
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text():
+    
+    return jsonify({'text': "HI how are you"})
     if 'recording' not in request.files:
         return jsonify({'error': 'No audio file provided'}), 400
 
