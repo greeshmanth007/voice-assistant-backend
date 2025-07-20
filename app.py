@@ -37,10 +37,10 @@ def home():
 
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text():
-    if 'audio' not in request.files:
+    if 'recording' not in request.files:
         return jsonify({'error': 'No audio file provided'}), 400
 
-    audio_file = request.files['audio']
+    audio_file = request.files['recording']
     path = "temp.webm"  
     audio_file.save(path)
 
