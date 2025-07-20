@@ -38,7 +38,7 @@ def speech_to_text():
         return jsonify({'error': 'No audio file provided'}), 400
 
     audio_file = request.files['audio']
-    path = "temp.wav"
+    path = "temp.webm"
     audio_file.save(path)
 
     result = model.transcribe(path)
@@ -64,7 +64,7 @@ def chatbot():
         return jsonify({'error': 'No audio file provided'}), 400
 
     audio_file = request.files['audio']
-    path = "temp_chat.wav"
+    path = "temp_chat.webm"
     audio_file.save(path)
     result = model.transcribe(path)
     user_text = result['text']
