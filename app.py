@@ -4,8 +4,9 @@ from gtts import gTTS
 import whisper
 import os
 import requests
+from openai import OpenAI  
 
-
+client = OpenAI(api_key="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")
 
 def download_small_model():
     model_path = os.path.expanduser("~/.cache/whisper/small.pt")
@@ -22,17 +23,14 @@ def download_small_model():
 
 download_small_model()
 
-
-
 app = Flask(__name__)
 CORS(app)
 
-# Load Whisper model once at startup
 model = whisper.load_model("small")
 
 @app.route('/')
 def home():
-    return "🎙️ Voice Assistant Backend is Live!"
+    return "🎙️ Voice Assistant Backend (GPT-powered) is Live!"
 
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text():
@@ -62,43 +60,39 @@ def text_to_speech():
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
-    # Step 1: Audio input → transcribe
     if 'audio' not in request.files:
         return jsonify({'error': 'No audio file provided'}), 400
 
     audio_file = request.files['audio']
     path = "temp_chat.wav"
     audio_file.save(path)
-
-    # Step 2: Transcribe with Whisper
     result = model.transcribe(path)
     user_text = result['text']
     os.remove(path)
 
-    # Step 3: Generate a reply (simple version, rule-based)
-    reply = get_bot_reply(user_text)
+    reply = get_gpt_reply(user_text)
 
-    # Step 4: Convert reply to speech
+    # Step 3: Convert to speech
     tts = gTTS(text=reply, lang='en', slow=False)
     reply_path = "reply.mp3"
     tts.save(reply_path)
 
     return send_file(reply_path, mimetype='audio/mpeg')
 
-#  Simple rule-based assistant logic
-def get_bot_reply(user_input):
-    user_input = user_input.lower()
-
-    if "hello" in user_input:
-        return "Hello babe, how can I help you today?"
-    elif "time" in user_input:
-        from datetime import datetime
-        return f"The time is {datetime.now().strftime('%I:%M %p')}."
-    elif "your name" in user_input:
-        return "I’m your sweet voice assistant!"
-    else:
-        return "Sorry, I didn’t understand that. Try again?"
-
+def get_gpt_reply(user_input):
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",  # can use "gpt-4o" if you have access
+            messages=[
+                {"role": "system", "content": "You are a friendly and helpful AI voice assistant."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        print("GPT Error:", e)
+        return "Sorry babe, something went wrong with my brain!"
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
