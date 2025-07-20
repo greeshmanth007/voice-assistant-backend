@@ -1,8 +1,9 @@
-Flask
+flask
 flask-cors
-gTTS
+gtts
+openai
+whisper
+pydub
+ffmpeg-python
 torch
 torchaudio
-numpy
-librosa
-openai-whisper
